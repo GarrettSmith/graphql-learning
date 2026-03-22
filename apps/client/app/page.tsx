@@ -1,44 +1,36 @@
-import { gql } from "@apollo/client";
+import { TypedDocumentNode, gql } from "@apollo/client";
 import { getClient } from "@/lib/apollo-client";
+import BookSearch from "@/components/BookSearch";
+import AddBook from "@/components/AddBook";
 
-interface Book {
-  id: string;
-  title: string;
-  year: number;
-  author: {
-    name: string
-  };
-}
+import { GET_BOOKS } from "@/lib/queries";
 
-const GET_BOOKS = gql`
-  query GetBooks {
-    books {
-      id
-      title
-      year
-      author {
-        name
-      }
-    }
-  }
-`;
-
-// TODO(human): implement this Server Component.
-// 1. Call getClient() to get the Apollo client
-// 2. Call client.query({ query: GET_BOOKS }) — it's async, so await it
-// 3. Pull `data` out of the result and render a <ul> listing each book as:
-//    "Title — Author (Year)"
 export default async function HomePage() {
   const client = getClient();
-  const books = await client.query<Book[]>({ query: GET_BOOKS });
+  const { data } = await client.query({ query: GET_BOOKS });
 
   return (
-    <ul>
-      {books.data?.map(book => (
-        <li key={book.id}>
-          {book.title} ({book.year}) - {book.author.name}
-        </li>
-      ))}
-    </ul>
-  )
+    <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+      <h1>Book Library</h1>
+
+      <h2>All Books</h2>
+      <ul>
+        {data?.books.map((book) => (
+          <li key={book.id}>
+            {book.title} — {book.author.name} ({book.year})
+          </li>
+        ))}
+      </ul>
+
+      <hr style={{ margin: "2rem 0" }} />
+
+      <h2>Search Books (Client)</h2>
+      <BookSearch />
+
+      <hr style={{ margin: "2rem 0" }} />
+
+      <h2>Add a Book</h2>
+      <AddBook />
+    </main>
+  );
 }

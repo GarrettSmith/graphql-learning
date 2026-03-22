@@ -1,0 +1,9 @@
+{
+  "name": "graphql-learning",
+  "private": true,
+  "scripts": {
+    "dev:server": "npm run dev --prefix apps/server",
+    "dev:client": "npm run dev --prefix apps/client",
+    "install:all": "npm install --prefix apps/server && npm install --prefix apps/client"
+  }
+}
