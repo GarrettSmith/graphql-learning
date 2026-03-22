@@ -1,32 +1,37 @@
-interface Author {
-  id: string;
-  name: string;
-}
+import { books, authors } from "./stores";
+import { Book, Author, BookConnection } from "./types";
+import { Context } from "./context";
 
-interface Book {
-  id: string;
-  title: string;
-  year: number;
-  authorId: string;
-}
-
-// In-memory "database"
-const authors: Author[] = [
-  { id: "1", name: "Frank Herbert" },
-  { id: "2", name: "Ursula K. Le Guin" },
-  { id: "3", name: "Isaac Asimov" },
-];
-
-const books: Book[] = [
-  { id: "1", title: "Dune", year: 1965, authorId: "1" },
-  { id: "2", title: "The Left Hand of Darkness", year: 1969, authorId: "2" },
-  { id: "3", title: "Foundation", year: 1951, authorId: "3" },
-  { id: "4", title: "Dune Messiah", year: 1969, authorId: "1" },
-];
+const encodeCursor = (book: Book) =>
+  Buffer.from(String(book.id)).toString("base64");
+const decodeCursor = (cursor: string) =>
+  Buffer.from(cursor, "base64").toString();
 
 export const resolvers = {
   Query: {
-    books: () => books,
+    books: (
+      _: unknown,
+      args: { first?: number; after?: string },
+    ): BookConnection => {
+      const startId = args.after ? decodeCursor(args.after) : null;
+      const startIndex = startId
+        ? books.findIndex((book) => book.id === startId) + 1
+        : 0;
+      const endIndex = startIndex + (args.first ?? 10);
+      const page = books.slice(startIndex, endIndex);
+      const edges = page.map((book) => ({
+        node: book,
+        cursor: encodeCursor(book),
+      }));
+      const pageInfo = {
+        hasNextPage: endIndex < books.length,
+        endCursor: edges[edges.length - 1]?.cursor ?? null,
+      };
+      return {
+        edges,
+        pageInfo,
+      };
+    },
 
     book: (_: unknown, args: { id: string }) => {
       return books.find((book) => book.id === args.id);
@@ -38,17 +43,20 @@ export const resolvers = {
   // Field resolvers — GraphQL calls these when a client asks for nested data.
   // "parent" here is the Book object returned by the Query resolver above.
   Book: {
-    author: (parent: Book) =>
-      authors.find((a) => a.id === parent.authorId),
+    author: async (parent: Book, _: unknown, context: Context) => {
+      return context.authorLoader.load(parent.authorId);
+    },
   },
 
   Author: {
-    books: (parent: Author) =>
-      books.filter((b) => b.authorId === parent.id),
+    books: (parent: Author) => books.filter((b) => b.authorId === parent.id),
   },
 
   Mutation: {
-    addBook: (_: unknown, args: { title: string; year: number; authorId: string }): Book => {
+    addBook: (
+      _: unknown,
+      args: { title: string; year: number; authorId: string },
+    ): Book => {
       const newBook: Book = {
         id: String(books.length + 1),
         title: args.title,

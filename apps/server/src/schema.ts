@@ -12,8 +12,23 @@ export const typeDefs = `#graphql
     author: Author!
   }
 
+  type BookConnection {
+    edges: [BookEdge!]!
+    pageInfo: PageInfo!
+  }
+
+  type BookEdge {
+    node: Book!
+    cursor: String!
+  }
+
+  type PageInfo {
+    hasNextPage: Boolean!
+    endCursor: String
+  }
+
   type Query {
-    books: [Book!]!
+    books(first: Int, after: String): BookConnection!
     book(id: ID!): Book
     authors: [Author!]!
   }
