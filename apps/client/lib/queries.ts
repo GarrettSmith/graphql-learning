@@ -1,5 +1,18 @@
 import { TypedDocumentNode, gql } from "@apollo/client";
 
+const BOOK_FIELDS = gql`
+  fragment BookFields on Book {
+    __typename
+    id
+    title
+    year
+    author {
+      __typename
+      name
+    }
+  }
+`;
+
 export interface GetBooksResult {
   books: {
     id: string;
@@ -12,22 +25,19 @@ export interface GetBooksResult {
 export const GET_BOOKS: TypedDocumentNode<GetBooksResult> = gql`
   query GetBooks {
     books {
-      id
-      title
-      year
-      author {
-        name
-      }
+      ...BookFields
     }
   }
+  ${BOOK_FIELDS}
 `;
 
 export interface AddBookResult {
   addBook: {
+    __typename: "Book";
     id: string;
     title: string;
     year: number;
-    author: { name: string };
+    author: { __typename: "Author"; name: string };
   };
 }
 
@@ -40,14 +50,10 @@ export interface AddBookVariables {
 export const ADD_BOOK: TypedDocumentNode<AddBookResult, AddBookVariables> = gql`
   mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {
     addBook(title: $title, year: $year, authorId: $authorId) {
-      id
-      title
-      year
-      author {
-        name
-      }
+      ...BookFields
     }
   }
+  ${BOOK_FIELDS}
 `;
 
 export interface GetAuthorsResult {
