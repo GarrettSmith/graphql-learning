@@ -1,11 +1,19 @@
 "use client";
 
 import { HttpLink } from "@apollo/client";
+import { ApolloLink } from "@apollo/client/link";
+import { ErrorLink } from "@apollo/client/link/error";
 import {
   ApolloClient,
   ApolloNextAppProvider,
   InMemoryCache,
 } from "@apollo/client-integration-nextjs";
+import { toast } from "sonner";
+
+const errorLink = new ErrorLink(({ error, operation, forward }) => {
+  toast.error(error.message);
+  forward(operation);
+});
 
 // Client-side factory — ApolloNextAppProvider calls this once and holds the singleton.
 // Must use ApolloClient from @apollo/client-integration-nextjs (the streaming-wrapped version),
@@ -37,7 +45,7 @@ function makeClient() {
         },
       },
     }),
-    link: new HttpLink({ uri: "/api/graphql" }),
+    link: ApolloLink.from([errorLink, new HttpLink({ uri: "/api/graphql" })]),
   });
 }
 
