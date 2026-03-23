@@ -33,7 +33,13 @@ export const typeDefs = `#graphql
     authors: [Author!]!
   }
 
+  input AddBookInput {
+    title: String!
+    year: Int!
+    authorId: ID!
+  }
+
   type Mutation {
-    addBook(title: String!, year: Int!, authorId: ID!): Book!
+    addBook(input: AddBookInput!): Book!
   }
 `;

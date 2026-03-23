@@ -14,13 +14,13 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {\n    addBook(title: $title, year: $year, authorId: $authorId) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n": typeof types.AddBookDocument,
+    "\n  mutation AddBook($input: AddBookInput!) {\n    addBook(input: $input) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n": typeof types.AddBookDocument,
     "\n  query GetAuthors {\n    authors {\n      id\n      name\n    }\n  }\n": typeof types.GetAuthorsDocument,
     "\n  query GetBooks($first: Int, $after: String, $filter: String) {\n    books(first: $first, after: $after, filter: $filter) {\n      edges {\n        node {\n          ...BookListItemFields\n        }\n        cursor\n      }\n      pageInfo {\n        hasNextPage\n        endCursor\n      }\n    }\n  }\n": typeof types.GetBooksDocument,
     "\n  fragment BookListItemFields on Book {\n    id\n    title\n    year\n    author {\n      name\n    }\n  }\n": typeof types.BookListItemFieldsFragmentDoc,
 };
 const documents: Documents = {
-    "\n  mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {\n    addBook(title: $title, year: $year, authorId: $authorId) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n": types.AddBookDocument,
+    "\n  mutation AddBook($input: AddBookInput!) {\n    addBook(input: $input) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n": types.AddBookDocument,
     "\n  query GetAuthors {\n    authors {\n      id\n      name\n    }\n  }\n": types.GetAuthorsDocument,
     "\n  query GetBooks($first: Int, $after: String, $filter: String) {\n    books(first: $first, after: $after, filter: $filter) {\n      edges {\n        node {\n          ...BookListItemFields\n        }\n        cursor\n      }\n      pageInfo {\n        hasNextPage\n        endCursor\n      }\n    }\n  }\n": types.GetBooksDocument,
     "\n  fragment BookListItemFields on Book {\n    id\n    title\n    year\n    author {\n      name\n    }\n  }\n": types.BookListItemFieldsFragmentDoc,
@@ -43,7 +43,7 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {\n    addBook(title: $title, year: $year, authorId: $authorId) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {\n    addBook(title: $title, year: $year, authorId: $authorId) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  mutation AddBook($input: AddBookInput!) {\n    addBook(input: $input) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation AddBook($input: AddBookInput!) {\n    addBook(input: $input) {\n      __typename\n      id\n      title\n      year\n      author {\n        __typename\n        name\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

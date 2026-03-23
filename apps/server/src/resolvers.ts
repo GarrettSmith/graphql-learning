@@ -1,5 +1,5 @@
 import { books, authors } from "./stores";
-import { Book, Author, BookConnection } from "./types";
+import { Book, Author, BookConnection, AddBookInput } from "./types";
 import { Context } from "./context";
 
 const encodeCursor = (book: Book) =>
@@ -58,15 +58,15 @@ export const resolvers = {
   },
 
   Mutation: {
-    addBook: (
-      _: unknown,
-      args: { title: string; year: number; authorId: string },
-    ): Book => {
+    addBook: (_: unknown, args: { input: AddBookInput }): Book => {
+      const {
+        input: { title, year, authorId },
+      } = args;
       const newBook: Book = {
         id: String(books.length + 1),
-        title: args.title,
-        year: args.year,
-        authorId: args.authorId,
+        title,
+        year,
+        authorId,
       };
       books.push(newBook);
       return newBook;

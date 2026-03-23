@@ -5,8 +5,8 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { graphql } from "@/lib/__generated__";
 
 const ADD_BOOK = graphql(`
-  mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {
-    addBook(title: $title, year: $year, authorId: $authorId) {
+  mutation AddBook($input: AddBookInput!) {
+    addBook(input: $input) {
       __typename
       id
       title
@@ -46,9 +46,7 @@ export default function AddBook() {
     try {
       await addBook({
         variables: {
-          title,
-          year: parseInt(year),
-          authorId: authorId,
+          input: { title, year: parseInt(year), authorId },
         },
       });
       setTitle("");

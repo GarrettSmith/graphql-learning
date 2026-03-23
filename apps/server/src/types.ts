@@ -24,3 +24,9 @@ export interface PageInfo {
   hasNextPage: boolean;
   endCursor: string | null;
 }
+
+export interface AddBookInput {
+  title: string;
+  year: number;
+  authorId: string;
+}
