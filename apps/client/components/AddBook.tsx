@@ -2,7 +2,31 @@
 
 import { useState } from "react";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { ADD_BOOK, GET_AUTHORS, GET_BOOKS } from "@/lib/queries";
+import { graphql } from "@/lib/__generated__";
+
+const ADD_BOOK = graphql(`
+  mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {
+    addBook(title: $title, year: $year, authorId: $authorId) {
+      __typename
+      id
+      title
+      year
+      author {
+        __typename
+        name
+      }
+    }
+  }
+`);
+
+const GET_AUTHORS = graphql(`
+  query GetAuthors {
+    authors {
+      id
+      name
+    }
+  }
+`);
 
 export default function AddBook() {
   const [title, setTitle] = useState("");
@@ -11,42 +35,25 @@ export default function AddBook() {
 
   const authorsQuery = useQuery(GET_AUTHORS);
   const [addBook, { loading, error }] = useMutation(ADD_BOOK, {
-    update(cache, { data }) {
-      const existing = cache.readQuery({ query: GET_BOOKS });
-      cache.writeQuery({
-        query: GET_BOOKS,
-        data: {
-          books: [...(existing?.books ?? []), data?.addBook],
-        },
-      });
+    update(cache) {
+      cache.evict({ fieldName: "books" });
+      cache.gc();
     },
   });
 
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     try {
-      const result = await addBook({
+      await addBook({
         variables: {
           title,
           year: parseInt(year),
           authorId: authorId,
         },
-        optimisticResponse: {
-          addBook: {
-            __typename: "Book",
-            id: "temp-id",
-            title,
-            year: parseInt(year),
-            author: { __typename: "Author", name: "" },
-          },
-        },
       });
       setTitle("");
       setYear("");
       setAuthorId("");
-      console.log(
-        `Added ${result.data?.addBook.title} - ${result.data?.addBook.author} (${result.data?.addBook.year})`,
-      );
     } catch (error) {
       console.error(error);
     }

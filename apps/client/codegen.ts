@@ -12,12 +12,11 @@ const config: CodegenConfig = {
     "./lib/__generated__/": {
       plugins: [],
       preset: "client",
+      presetConfig: {
+        fragmentMasking: { unmaskFunctionName: "useFragment" },
+      },
       config: {
         useTypeImports: true,
-        // Fragment masking disabled for now — revisit when learning large-app patterns.
-        // When enabled, fragment fields are hidden behind FragmentType<> and require
-        // useFragment() to access, enforcing strict co-location (Relay-style).
-        disableOnClient: true,
       },
     },
   },

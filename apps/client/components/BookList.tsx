@@ -2,10 +2,28 @@
 
 import { useQuery } from "@apollo/client/react";
 import { Virtuoso } from "react-virtuoso";
-import { GET_BOOKS } from "@/lib/queries";
-import { useCallback, useDeferredValue, useEffect, useState } from "react";
-import { GetBooksQuery } from "@/lib/__generated__/graphql";
 import { useDebounce } from "@/hooks/useDebounce";
+import { graphql } from "@/lib/__generated__";
+import { useCallback, useState } from "react";
+import { GetBooksQuery } from "@/lib/__generated__/graphql";
+import BookListItem, { BOOK_LIST_ITEM_FIELDS } from "./BookListItem";
+
+const GET_BOOKS = graphql(`
+  query GetBooks($first: Int, $after: String, $filter: String) {
+    books(first: $first, after: $after, filter: $filter) {
+      edges {
+        node {
+          ...BookListItemFields
+        }
+        cursor
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`);
 
 type BookEdge = NonNullable<GetBooksQuery["books"]["edges"][number]>;
 
@@ -16,8 +34,6 @@ export default function BookList() {
   const [searchTerm, setSearchTerm] = useState("");
   const filter = useDebounce(searchTerm, FILTER_DEBOUNCE);
 
-  useEffect(() => console.log(filter), [filter]);
-
   const { data, loading, error, fetchMore } = useQuery(GET_BOOKS, {
     variables: {
       first: PAGE_SIZE,
@@ -25,9 +41,6 @@ export default function BookList() {
     },
   });
 
-  // TODO 2: implement loadMore
-  // - if !data?.books.pageInfo.hasNextPage, return early
-  // - call fetchMore with variables: { first: PAGE_SIZE, after: data.books.pageInfo.endCursor }
   function loadMore() {
     // Don't load more if there is no next page
     if (!data?.books.pageInfo.hasNextPage) {
@@ -38,7 +51,7 @@ export default function BookList() {
       variables: {
         after: data?.books.pageInfo.endCursor,
         first: PAGE_SIZE,
-        filter: searchTerm,
+        filter,
       },
     });
   }
@@ -46,24 +59,10 @@ export default function BookList() {
   const edges = data?.books.edges ?? [];
 
   const renderItem = useCallback(
-    (_: unknown, edge: BookEdge) => (
-      <div>
-        {edge.node.title} - {edge.node.author.name} ({edge.node.year})
-      </div>
-    ),
+    (_: unknown, edge: BookEdge) => <BookListItem book={edge.node} />,
     [],
   );
 
-  // TODO 3: render a Virtuoso list
-  // props:
-  //   data={edges}
-  //   endReached={loadMore}
-  //   style={{ height: "600px" }}
-  //   itemContent={(_, edge) => (
-  //     <div style={{ padding: "0.5rem 0", borderBottom: "1px solid #eee" }}>
-  //       {edge.node.title} — {edge.node.author.name} ({edge.node.year})
-  //     </div>
-  //   )}
   return (
     <>
       <input
