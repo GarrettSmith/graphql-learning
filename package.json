@@ -2,8 +2,14 @@
   "name": "graphql-learning",
   "private": true,
   "scripts": {
+    "dev": "concurrently -c auto -n server,client,types \"npm run dev:server\" \"npm run dev:client\" \"npm run codegen:watch\"",
     "dev:server": "npm run dev --prefix apps/server",
     "dev:client": "npm run dev --prefix apps/client",
+    "codegen": "npm run codegen --prefix apps/client",
+    "codegen:watch": "npm run codegen:watch --prefix apps/client",
     "install:all": "npm install --prefix apps/server && npm install --prefix apps/client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

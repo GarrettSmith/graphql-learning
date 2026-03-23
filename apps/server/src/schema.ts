@@ -28,7 +28,7 @@ export const typeDefs = `#graphql
   }
 
   type Query {
-    books(first: Int, after: String): BookConnection!
+    books(first: Int, after: String, filter: String): BookConnection!
     book(id: ID!): Book
     authors: [Author!]!
   }

@@ -11,20 +11,25 @@ export const resolvers = {
   Query: {
     books: (
       _: unknown,
-      args: { first?: number; after?: string },
+      args: { first?: number; after?: string; filter?: string },
     ): BookConnection => {
+      const filteredBooks = args.filter
+        ? books.filter((book) =>
+            book.title.toLowerCase().includes(args.filter!.toLowerCase()),
+          )
+        : books;
       const startId = args.after ? decodeCursor(args.after) : null;
       const startIndex = startId
-        ? books.findIndex((book) => book.id === startId) + 1
+        ? filteredBooks.findIndex((book) => book.id === startId) + 1
         : 0;
       const endIndex = startIndex + (args.first ?? 10);
-      const page = books.slice(startIndex, endIndex);
+      const page = filteredBooks.slice(startIndex, endIndex);
       const edges = page.map((book) => ({
         node: book,
         cursor: encodeCursor(book),
       }));
       const pageInfo = {
-        hasNextPage: endIndex < books.length,
+        hasNextPage: endIndex < filteredBooks.length,
         endCursor: edges[edges.length - 1]?.cursor ?? null,
       };
       return {

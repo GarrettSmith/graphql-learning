@@ -1,6 +1,6 @@
-import { TypedDocumentNode, gql } from "@apollo/client";
+import { graphql } from "@/lib/__generated__";
 
-const BOOK_FIELDS = gql`
+export const BOOK_FIELDS = graphql(`
   fragment BookFields on Book {
     __typename
     id
@@ -11,63 +11,45 @@ const BOOK_FIELDS = gql`
       name
     }
   }
-`;
+`);
 
-export interface GetBooksResult {
-  books: {
-    id: string;
-    title: string;
-    year: number;
-    author: { name: string };
-  }[];
-}
-
-export const GET_BOOKS: TypedDocumentNode<GetBooksResult> = gql`
-  query GetBooks {
-    books {
-      ...BookFields
+export const GET_BOOKS = graphql(`
+  query GetBooks($first: Int, $after: String, $filter: String) {
+    books(first: $first, after: $after, filter: $filter) {
+      edges {
+        node {
+          __typename
+          id
+          title
+          year
+          author {
+            __typename
+            name
+          }
+        }
+        cursor
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
-  ${BOOK_FIELDS}
-`;
+`);
 
-export interface AddBookResult {
-  addBook: {
-    __typename: "Book";
-    id: string;
-    title: string;
-    year: number;
-    author: { __typename: "Author"; name: string };
-  };
-}
-
-export interface AddBookVariables {
-  title: string;
-  year: number;
-  authorId: string;
-}
-
-export const ADD_BOOK: TypedDocumentNode<AddBookResult, AddBookVariables> = gql`
+export const ADD_BOOK = graphql(`
   mutation AddBook($title: String!, $year: Int!, $authorId: ID!) {
     addBook(title: $title, year: $year, authorId: $authorId) {
       ...BookFields
     }
   }
-  ${BOOK_FIELDS}
-`;
+`);
 
-export interface GetAuthorsResult {
-  authors: {
-    id: string;
-    name: string;
-  }[];
-}
-
-export const GET_AUTHORS: TypedDocumentNode<GetAuthorsResult> = gql`
+export const GET_AUTHORS = graphql(`
   query GetAuthors {
     authors {
       id
       name
     }
   }
-`;
+`);

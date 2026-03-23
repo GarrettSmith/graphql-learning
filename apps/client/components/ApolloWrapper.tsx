@@ -12,11 +12,43 @@ import {
 // not the base @apollo/client — otherwise the types won't satisfy ApolloNextAppProvider.
 function makeClient() {
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            books: {
+              keyArgs: ["filter"],
+              merge(existing, incoming) {
+                // Deduplicate by cursors
+                const existingEdges = existing?.edges ?? [];
+                const existingCursors = new Set(
+                  existingEdges.map((e: { cursor: string }) => e.cursor),
+                );
+                const newEdges = incoming.edges.filter(
+                  (e: { cursor: string }) => !existingCursors.has(e.cursor),
+                );
+                return {
+                  ...incoming,
+                  edges: [...existingEdges, ...newEdges],
+                };
+              },
+            },
+          },
+        },
+      },
+    }),
     link: new HttpLink({ uri: "/api/graphql" }),
   });
 }
 
-export default function ApolloWrapper({ children }: { children: React.ReactNode }) {
-  return <ApolloNextAppProvider makeClient={makeClient}>{children}</ApolloNextAppProvider>;
+export default function ApolloWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ApolloNextAppProvider makeClient={makeClient}>
+      {children}
+    </ApolloNextAppProvider>
+  );
 }
