@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { graphql, useFragment } from "@/lib/__generated__";
 import type { FragmentType } from "@/lib/__generated__";
 
@@ -19,8 +20,8 @@ export default function BookListItem({
 }) {
   const data = useFragment(BOOK_LIST_ITEM_FIELDS, book);
   return (
-    <div style={{ padding: "0.5rem 0", borderBottom: "1px solid #eee" }}>
+    <Link href={`/books/${data.id}`} style={{ display: "block", padding: "0.5rem 0", borderBottom: "1px solid #eee" }}>
       {data.title} — {data.author.name} ({data.year})
-    </div>
+    </Link>
   );
 }

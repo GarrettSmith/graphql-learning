@@ -1,6 +1,7 @@
 import { books, authors } from "./stores";
 import { Book, Author, BookConnection, AddBookInput } from "./types";
 import { Context } from "./context";
+import { GraphQLError } from "graphql/error";
 
 const encodeCursor = (book: Book) =>
   Buffer.from(String(book.id)).toString("base64");
@@ -39,7 +40,13 @@ export const resolvers = {
     },
 
     book: (_: unknown, args: { id: string }) => {
-      return books.find((book) => book.id === args.id);
+      const found = books.find((book) => book.id === args.id);
+      if (!found) {
+        throw new GraphQLError(`Book with id ${args.id} not found`, {
+          extensions: { code: "NOT_FOUND" },
+        });
+      }
+      return found;
     },
 
     authors: () => authors,
