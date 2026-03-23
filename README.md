@@ -1,39 +1,57 @@
 # graphql-learning
 
-A hands-on monorepo for learning GraphQL with Apollo Server and Next.js.
+A hands-on monorepo for learning GraphQL end-to-end: Apollo Server on the backend, Next.js 15 App Router + Apollo Client on the frontend.
 
 ## Structure
 
 ```
 apps/
-  server/   Apollo Server (GraphQL API) — Node.js + TypeScript
-  client/   Next.js frontend — TypeScript, React, Apollo Client
+  server/   Apollo Server 5 GraphQL API — Node.js, TypeScript, port 4000
+  client/   Next.js 15 frontend — TypeScript, React 19, Apollo Client 4, port 3000
 ```
 
-## Running
+## Environment setup
 
-From the root, use npm scripts to delegate to each app:
+No `.env` files needed. No external services or database. Everything runs locally.
+
+Required: check `.nvmrc` for the Node version and ensure it's active before running anything.
+
+Install dependencies for both apps:
 
 ```bash
-# Run the GraphQL API (http://localhost:4000)
-npm run dev:server
-
-# Run the Next.js frontend (http://localhost:3000)
-npm run dev:client
+npm run install:all
 ```
 
-Or run each app directly from its own directory:
+## Commands
+
+Run from the **repo root**:
 
 ```bash
-cd apps/server && npm run dev
-cd apps/client && npm run dev
+# Start everything (server + client + codegen watch) concurrently
+npm run dev
+
+# Start apps individually
+npm run dev:server       # GraphQL API at http://localhost:4000
+npm run dev:client       # Next.js at http://localhost:3000
+
+# GraphQL codegen (server must be running — introspects live schema)
+npm run codegen          # run once
+npm run codegen:watch    # watch mode
+
+# Install deps for both apps
+npm run install:all
 ```
+
+Both apps must be running for the frontend to fetch data.
+
+Run app-specific commands (build, lint, test) from within each app directory. See `apps/server/README.md` and `apps/client/README.md`.
 
 ## What's being learned
 
-- GraphQL schema definition (types, queries, mutations)
-- Apollo Server resolvers (root, field, nested)
-- Apollo Client in Next.js App Router
-- SSR with `getClient()` in Server Components
-- Interactive data fetching with `useQuery` in Client Components
-- Writing mutations with `useMutation`
+- GraphQL schema definition (types, queries, mutations, connections)
+- Apollo Server resolvers — root, field, nested, DataLoader batching
+- Cursor-based pagination
+- Apollo Client in Next.js App Router — RSC vs Client Component split
+- `useQuery`, `useMutation`, `fetchMore` for infinite scroll
+- Fragment colocation with graphql-codegen client preset
+- Apollo cache policies and cache eviction

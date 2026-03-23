@@ -1,36 +1,46 @@
-# graphql-learning — Claude context
+# graphql-learning — agent context
 
-## Monorepo layout
+> For commands, environment setup, and project overview see [README.md](README.md).
 
-| Path | Purpose |
-|------|---------|
-| `apps/server/` | Apollo Server GraphQL API, runs on port 4000 |
-| `apps/client/` | Next.js 15 App Router frontend, runs on port 3000 |
+A learning monorepo: Apollo Server 5 (port 4000) + Next.js 15 App Router (port 3000).
 
-## Running the project
+## Architecture
 
-```bash
-npm run dev:server   # starts the GraphQL API
-npm run dev:client   # starts Next.js
+```
+Browser
+  └── Next.js (3000)
+        ├── Server Components  →  getClient() / query()  →  Apollo Server (4000)
+        └── Client Components  →  ApolloNextAppProvider  →  /api/graphql (rewrite → 4000)
 ```
 
-Both apps must be running for the frontend to fetch data.
+The Next.js rewrite at `/api/graphql → http://localhost:4000` lets client-side components use a relative URL, avoiding CORS. See `apps/client/next.config.ts`.
 
-## Key files
+**Two separate Apollo clients exist intentionally:**
+- `apps/client/lib/apollo-client.ts` — RSC side, `registerApolloClient` gives per-request cache isolation
+- `apps/client/components/ApolloWrapper.tsx` — client side, singleton via `ApolloNextAppProvider`
 
-| File | Role |
-|------|------|
-| `apps/server/src/schema.ts` | GraphQL type definitions |
-| `apps/server/src/resolvers.ts` | Resolver functions + in-memory data |
-| `apps/server/src/index.ts` | Apollo Server entry point |
-| `apps/client/lib/apollo-client.ts` | Shared Apollo Client factory (`makeClient`, `getClient`) |
-| `apps/client/components/ApolloWrapper.tsx` | `"use client"` provider boundary |
-| `apps/client/app/layout.tsx` | Root layout — wraps app in ApolloWrapper |
-| `apps/client/app/page.tsx` | Home page — Server Component, SSR fetch |
+## Key decisions & trade-offs
+
+**In-memory data store** — no database. Intentional for a learning project; mutations survive only for the server process lifetime.
+
+**DataLoader for authors** — batches per-request author lookups to avoid N+1 when resolving `Book.author`. A new loader is created per request (via context factory) so batching is scoped correctly and doesn't bleed between requests.
+
+**Cursor-based pagination** — Relay-style, base64-encoded book IDs as cursors. Chosen over offset pagination because offsets become inconsistent when data is mutated mid-scroll.
+
+**Cache eviction after mutation** — `cache.evict({ fieldName: "books" })` instead of `refetchQueries`. Avoids a redundant network round-trip; Apollo re-fetches only when something reads the field again.
+
+**Fragment masking** — `useFragment` from codegen keeps data requirements colocated with the component that uses them. `BookListItem` owns its fragment; `BookList` composes it.
+
+**`keyArgs: ["filter"]` in type policies** — different filter values get separate cache buckets, so switching filters doesn't corrupt pagination state. The merge function deduplicates by cursor for idempotent infinite scroll.
+
+## Anti-patterns
+
+- Don't import from `@apollo/client` directly in Next.js integration code — use `@apollo/client-integration-nextjs`. The base package's types won't satisfy `ApolloNextAppProvider`.
+- Don't run `codegen` without the server running — it introspects the live schema over HTTP.
+- Don't add a persistent database — keep it in-memory.
 
 ## Learning pattern
 
-Each step follows the same structure:
-1. Claude explains the concept and scaffolds the file
-2. Human implements the TODO
-3. Claude reviews, fixes any issues, and moves to the next step
+Each concept follows: Claude explains + scaffolds → you implement the TODO → Claude reviews and moves on.
+
+See `apps/server/CLAUDE.md` and `apps/client/CLAUDE.md` for app-specific file maps and decisions.
